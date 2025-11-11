@@ -1,0 +1,10 @@
+"""
+BUILD file for the User API v1.
+"""
+
+load("//tools/bazel:proto.bzl", "go_api_library")
+
+go_api_library(
+    name = "user_v1",
+    srcs = ["user.proto"],
+)

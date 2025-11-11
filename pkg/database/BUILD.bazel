@@ -1,0 +1,16 @@
+"""
+BUILD file for the shared database package.
+"""
+
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "database",
+    srcs = ["database.go"],
+    importpath = "go-monorepo-template/pkg/database",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@gorm_io_driver_postgres//:driver_postgres",
+        "@gorm_io_gorm//:gorm",
+    ],
+)

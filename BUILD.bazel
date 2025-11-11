@@ -1,0 +1,18 @@
+"""
+Root BUILD.bazel file.
+"""
+
+load("@gazelle//:def.bzl", "gazelle")
+load("@gazelle//:extensions.bzl", "go_mod")
+
+# gazelle:prefix go-monorepo-template
+gazelle(name = "gazelle")
+
+# gazelle:go_mod_mode tidymod
+gazelle(
+    name = "gazelle-go-mod",
+    gazelle = ":gazelle",
+    extensions = [
+        go_mod,
+    ],
+)

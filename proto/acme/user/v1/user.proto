@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package acme.user.v1;
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+option go_package = "go-monorepo-template/proto/acme/user/v1";
+
+// The user service definition.
+service UserService {
+  // Retrieves a user by their ID.
+  rpc GetUser(GetUserRequest) returns (User) {
+    option (google.api.http) = {
+      get: "/v1/users/{user_id}"
+    };
+  }
+}
+
+// A user resource.
+message User {
+  string user_id = 1;
+  string display_name = 2;
+  string email = 3;
+}
+
+// Request message for GetUser RPC.
+message GetUserRequest {
+  // The ID of the user to retrieve.
+  string user_id = 1 [
+    (validate.rules).string = {
+      min_len: 1,
+      max_len: 36,
+      pattern: "^[a-zA-Z0-9-]+$"
+    }
+  ];
+}
