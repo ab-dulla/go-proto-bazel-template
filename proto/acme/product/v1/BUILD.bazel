@@ -1,0 +1,10 @@
+"""
+BUILD file for the Product API v1.
+"""
+
+load("//tools/bazel:proto.bzl", "go_api_library")
+
+go_api_library(
+    name = "product_v1",
+    srcs = ["product.proto"],
+)

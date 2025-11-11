@@ -1,0 +1,8 @@
+"""
+BUILD file for Bazel macros.
+"""
+
+exports_files([
+    "proto.bzl",
+    "k8s.bzl",
+])

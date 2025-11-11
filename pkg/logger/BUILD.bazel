@@ -1,0 +1,12 @@
+"""
+BUILD file for the shared logger package.
+"""
+
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "logger",
+    srcs = ["logger.go"],
+    importpath = "go-monorepo-template/pkg/logger",
+    visibility = ["//visibility:public"],
+)

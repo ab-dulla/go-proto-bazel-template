@@ -1,0 +1,13 @@
+# Prod values for user-api
+replicaCount: 3
+
+image:
+  repository: harbor.example.com/my-project/user-api
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

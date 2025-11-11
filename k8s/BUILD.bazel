@@ -1,0 +1,64 @@
+"""
+BUILD file for Kubernetes manifests.
+"""
+
+load("//tools/bazel:k8s.bzl", "k8s_environment")
+
+SERVICES = [
+    {
+        "release_name": "user-api",
+        "image_target": "//services/user-api:image",
+        "dev_values": "//k8s/overlays/dev:values-user-api.yaml",
+        "staging_values": "//k8s/overlays/staging:values-user-api.yaml",
+        "prod_values": "//k8s/overlays/prod:values-user-api.yaml",
+    },
+    {
+        "release_name": "product-api",
+        "image_target": "//services/product-api:image",
+        "dev_values": "//k8s/overlays/dev:values-product-api.yaml",
+        "staging_values": "//k8s/overlays/staging:values-product-api.yaml",
+        "prod_values": "//k8s/overlays/prod:values-product-api.yaml",
+    },
+]
+
+k8s_environment(
+    name = "dev",
+    chart = "//charts/app:app_chart",
+    kustomize_overlay = "//k8s/overlays/dev:kustomization.yaml",
+    services = [
+        {
+            "release_name": s["release_name"],
+            "image_target": s["image_target"],
+            "values_file": s["dev_values"],
+        }
+        for s in SERVICES
+    ],
+)
+
+k8s_environment(
+    name = "staging",
+    chart = "//charts/app:app_chart",
+    kustomize_overlay = "//k8s/overlays/staging:kustomization.yaml",
+    services = [
+        {
+            "release_name": s["release_name"],
+            "image_target": s["image_target"],
+            "values_file": s["staging_values"],
+        }
+        for s in SERVICES
+    ],
+)
+
+k8s_environment(
+    name = "prod",
+    chart = "//charts/app:app_chart",
+    kustomize_overlay = "//k8s/overlays/prod:kustomization.yaml",
+    services = [
+        {
+            "release_name": s["release_name"],
+            "image_target": s["image_target"],
+            "values_file": s["prod_values"],
+        }
+        for s in SERVICES
+    ],
+)

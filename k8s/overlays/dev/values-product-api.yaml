@@ -1,0 +1,13 @@
+# Dev values for product-api
+replicaCount: 1
+
+image:
+  repository: harbor.example.com/my-project/product-api
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi

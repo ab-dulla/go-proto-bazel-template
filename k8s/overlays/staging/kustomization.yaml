@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# The helm_template output will be automatically included by the kustomize_build rule.
+
+patches:
+  - patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/envFrom
+        value:
+          - secretRef:
+              name: db-credentials
+    target:
+      kind: Deployment
+      name: user-api
+
+helmCharts:
+  - name: app
+    releaseName: user-api
+    version: 0.1.0
+    valuesFile: values-user-api.yaml
+  - name: app
+    releaseName: product-api
+    version: 0.1.0
+    valuesFile: values-product-api.yaml
