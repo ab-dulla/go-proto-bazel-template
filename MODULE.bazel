@@ -8,44 +8,14 @@ module(
     compatibility_level = 1,
 )
 
-bazel_dep(name = "bazel_skylib", version = "1.8.2") # Standard library of Starlark macros and functions, e.g., for common utility functions
-# Example: load("@bazel_skylib//lib:dicts.bzl", "dict_union")
-
 bazel_dep(name = "rules_go", version = "0.59.0") # Go rules for building Go projects, e.g., compiling and testing Go code
-# Example: go_binary(name = "my_app", srcs = ["main.go"])
-# Example sh command: go mod tidy
-
-bazel_dep(name = "rules_proto", version = "7.1.0") # Rules for working with Protocol Buffers, e.g., generating code from .proto files
-# Example: proto_library(name = "my_proto", srcs = ["my_file.proto"])
-# Example sh command: protoc --go_out=. --go_opt=paths=source_relative my_file.proto
-
-bazel_dep(name = "rules_pkg", version = "1.1.0") # Rules for packaging files into archives and installers, e.g., creating .tar or .deb files
-# Example: pkg_tar(name = "my_tar", srcs = ["file.txt"], strip_prefix = "/")
-# Example sh command: tar -cvf my_tar.tar file.txt
-
-bazel_dep(name = "rules_oci", version = "2.2.6") # Rules for working with OCI-compliant container images, e.g., pulling and pushing images
-# Example: oci_push(name = "push_image", image = "//:my_image", registry = "gcr.io/my-project")
-# Example sh command: crane pull gcr.io/distroless/base distroless_base.tar
-
 bazel_dep(name = "gazelle", version = "0.47.0") # Tool for generating Bazel build files for Go projects, e.g., creating BUILD.bazel files from go.mod
-# Example: gazelle(name = "update_build_files", args = ["-go_prefix", "github.com/my/repo"])
-# Example sh command: bazel run //:gazelle -- update
-
+bazel_dep(name = "rules_proto", version = "7.1.0") # Rules for working with Protocol Buffers, e.g., generating code from .proto files
+bazel_dep(name = "rules_pkg", version = "1.1.0") # Rules for packaging files into archives and installers, e.g., creating .tar or .deb files
+bazel_dep(name = "rules_oci", version = "2.2.6") # Rules for working with OCI-compliant container images, e.g., pulling and pushing images
 bazel_dep(name = "aspect_rules_lint", version = "1.10.2") # Rules for linting and static analysis, e.g., enforcing code style and detecting errors
-# Example: lint_test(name = "lint_code", srcs = ["main.go"])
-# Example sh command: bazel test //:lint_code
-
 bazel_dep(name = "rules_kustomize", version = "0.5.2") # Rules for working with Kubernetes Kustomize, e.g., managing Kubernetes manifests
-# Example: kustomize_build(name = "kustomize_output", src = "overlays/dev")
-# Example sh command: bazel run //:kustomize_output
-
 bazel_dep(name = "rules_helm", version = "0.17.0") # Rules for working with Helm charts, e.g., templating and deploying charts
-# Example: helm_template(name = "render_chart", chart = "charts/my_chart")
-# Example sh command: bazel run //:render_chart
-
-bazel_dep(name = "rules_shell", version = "0.6.1") # Rules for working with shell scripts, e.g., running and testing shell scripts
-# Example: sh_test(name = "test_script", srcs = ["test.sh"])
-# Example sh command: bazel test //:test_script
 
 ## (Optional) Go SDK toolchain: removed pending correct repository name; rules_go default toolchain will be used.
 
