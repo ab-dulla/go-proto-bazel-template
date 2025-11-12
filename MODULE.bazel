@@ -47,9 +47,6 @@ oci.pull(
     image = "gcr.io/distroless/base",
     platforms = [
         "linux/amd64",
-        "linux/arm64",
     ],
 )
-use_repo(oci, "distroless_base", "distroless_base_linux_amd64", "distroless_base_linux_arm64")
-
-## Removed googleapis local_path_override; using local //google/api package only.
+use_repo(oci, "distroless_base", "distroless_base_linux_amd64")
