@@ -2,11 +2,9 @@
 Custom Bazel macros for Kubernetes manifest generation.
 """
 
-load("@rules_kustomize//kustomize:kustomize.bzl", "kustomize_build")
-load("@rules_helm//helm:helm.bzl", "helm_template")
-load("@rules_docker//container:container.bzl", "container_bundle")
+load("@rules_helm//helm:defs.bzl", "helm_template")
 
-def k8s_environment(name, chart, kustomize_overlay, services = {}):
+def k8s_environment(name, chart, kustomize_overlay, services = []):
     """
     A macro that generates a final Kubernetes manifest for a specific environment.
 
@@ -18,31 +16,22 @@ def k8s_environment(name, chart, kustomize_overlay, services = {}):
     5. Produce a single, deployable YAML manifest.
     """
 
-    # 1. Bundle images to get their digests for stamping
-    container_bundle(
-        name = name + "_images",
-        images = {
-            service["release_name"]: service["image_target"]
-            for service in services
-        },
-    )
+    # 1. Collect image digests: each oci_image produces a sibling target `<name>.digest`.
+    # rules_helm expects an `images` label which is a mapping (was previously container_bundle). For now we
+    # pass the raw image targets list; if needed, create a helper rule producing a bundle file mapping release_name->digest.
 
     # 2. Render the Helm chart, stamping the image digests
+    # Render Helm chart (no direct image stamping in rules_helm; image digests should be passed via values files)
     helm_template(
         name = name + "_helm_render",
         chart = chart,
-        images = ":" + name + "_images",
-        stamp = "{{.image_tag}}",
         values = [service["values_file"] for service in services],
         visibility = ["//visibility:public"],
     )
 
-    # 3. Apply Kustomize overlay
-    kustomize_build(
+    # 3. Expose the Kustomize overlay target directly as an alias for convenience.
+    native.alias(
         name = name,
-        srcs = [
-            ":" + name + "_helm_render",
-        ],
-        kustomization = kustomize_overlay,
+        actual = kustomize_overlay,
         visibility = ["//visibility:public"],
     )

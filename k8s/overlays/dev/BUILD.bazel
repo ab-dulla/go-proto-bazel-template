@@ -1,0 +1,13 @@
+load("@rules_kustomize//kustomize:kustomize.bzl", "kustomization")
+
+kustomization(
+    name = "kustomization",
+    srcs = [
+        "kustomization.yaml",
+        "values-product-api.yaml",
+        "values-user-api.yaml",
+    ],
+    file = "kustomization.yaml",
+    requires_helm = True,
+    visibility = ["//visibility:public"],
+)

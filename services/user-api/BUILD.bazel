@@ -3,8 +3,8 @@ BUILD file for the User API service.
 """
 
 load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
-load("@rules_docker//go:image.bzl", "go_image")
-load("@rules_docker//container:container.bzl", "container_push")
+load("@rules_oci//oci:defs.bzl", "oci_image", "oci_push")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 go_library(
     name = "user_api_lib",
@@ -14,12 +14,11 @@ go_library(
     deps = [
         "//pkg/database",
         "//pkg/logger",
-        "//proto/acme/user/v1:user_v1_go_grpc",
-        "//proto/acme/user/v1:user_v1_go_grpc_gateway",
+        "//proto/acme/user/v1:user",
         "@com_github_grpc_ecosystem_grpc_gateway_v2//runtime",
+        "@io_gorm_gorm//:go_default_library",
         "@org_golang_google_grpc//:grpc",
         "@org_golang_google_grpc//credentials/insecure",
-        "@gorm_io_gorm//:gorm",
     ],
 )
 
@@ -45,27 +44,37 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-go_image(
-    name = "image",
-    embed = [":user-api"],
-    # GORM requires CGO for Postgres SSL, so we use a base image with C libraries.
-    # See: https://gorm.io/docs/connecting_to_the_database.html#PostgreSQL
-    base = "@distroless_base",
-    cgo = True,
-    visibility = ["//visibility:public"],
-    data = [":openapi_spec"],
-    # We must set the path for the data file to be relative to the service root
-    # so that the main.go file can find it.
-    remap_paths = {
-        "proto/acme/user/v1/user_v1.swagger.json": "services/user-api/user_v1.swagger.json",
-    },
+pkg_tar(
+    name = "app_layer",
+    srcs = [
+        ":openapi_spec",
+        ":user-api",
+    ],
+    mode = "0755",
+    package_dir = "app",
 )
 
-container_push(
+oci_image(
+    name = "image",
+    base = "@distroless_base",
+    entrypoint = ["/app/user-api"],
+    tars = [":app_layer"],
+    visibility = ["//visibility:public"],
+)
+
+oci_push(
     name = "push",
-    format = "Docker",
     image = ":image",
-    registry = "harbor.example.com",
-    repository = "my-project/user-api",
-    tag = "latest",
+    repository = "harbor.example.com/my-project/user-api:latest",
+)
+
+go_test(
+    name = "user-api_test",
+    srcs = ["user_api_test.go"],
+    embed = [":user-api_lib"],
+    deps = [
+        "//proto/acme/user/v1:user",
+        "@com_github_stretchr_testify//assert",
+        "@org_golang_google_grpc//:grpc",
+    ],
 )

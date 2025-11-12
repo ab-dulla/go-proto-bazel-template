@@ -1,3 +1,7 @@
+load("@rules_go//go:def.bzl", "go_library")
+load("@rules_go//proto:def.bzl", "go_proto_library")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+
 """
 BUILD file for the User API v1.
 """
@@ -7,4 +11,33 @@ load("//tools/bazel:proto.bzl", "go_api_library")
 go_api_library(
     name = "user_v1",
     srcs = ["user.proto"],
+)
+
+proto_library(
+    name = "v1_proto",
+    srcs = ["user.proto"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//google/api:api_proto",
+        "//validate:validate_proto",
+    ],
+)
+
+go_proto_library(
+    name = "v1_go_proto",
+    compilers = ["@io_bazel_rules_go//proto:go_grpc_v2"],
+    importpath = "go-monorepo-template/proto/acme/user/v1",
+    proto = ":v1_proto",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//google/api:annotations_proto",
+        "//validate:validate_proto",
+    ],
+)
+
+go_library(
+    name = "user",
+    embed = [":v1_go_proto"],
+    importpath = "go-monorepo-template/proto/acme/user/v1",
+    visibility = ["//visibility:public"],
 )
