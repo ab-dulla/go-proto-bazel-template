@@ -91,6 +91,36 @@ bazel build //k8s:dev
 kubectl apply -f bazel-bin/k8s/dev.yaml
 ```
 
+### Working Directly With Kustomize Overlays
+
+If you want to inspect or diff the raw Kubernetes manifests produced *before* they are bundled by the `k8s_environment` macro, you can build each overlay explicitly using the `manifests` alias target:
+
+```sh
+# Build raw manifests for dev overlay
+bazel build //k8s/overlays/dev:manifests
+# Example output file (path depends on rule implementation): bazel-bin/k8s/overlays/dev/kustomization.yaml
+
+# Build raw manifests for staging overlay
+bazel build //k8s/overlays/staging:manifests
+
+# Build raw manifests for prod overlay
+bazel build //k8s/overlays/prod:manifests
+```
+
+These overlay outputs are useful for:
+
+- Reviewing environment-specific patches
+- Running `kubectl diff` locally
+- Feeding into cluster policy scanners (e.g., conftest, kube-score) prior to full packaging
+
+The `k8s_environment` macro then combines:
+
+1. Helm chart render (parameterized by service values files)
+2. Kustomize overlay transformations
+3. Image references built by Bazel
+
+to produce a single deployment manifest per environment (`//k8s:dev`, `//k8s:staging`, `//k8s:prod`).
+
 ### How to Push Artifacts
 
 ### Container Images (OCI)
@@ -117,11 +147,28 @@ This template uses a powerful combination of Helm and Kustomize for managing Kub
 1. **Base Helm Chart (`/charts/app`):** A single, generic "App" chart defines the common Kubernetes resources (`Deployment`, `Service`, `HPA`, etc.). It's highly configurable via a `values.yaml` file.
 2. **Kustomize Overlays (`/k8s/overlays`):** Each environment (`dev`, `staging`, `prod`) has its own Kustomize overlay. The `kustomization.yaml` file in each overlay:
 
-  - Specifies which services to deploy.
-  - Points to environment-specific `values-*.yaml` files to configure each service's replica count, resources, etc.
-  - Can apply strategic patches to the manifests (e.g., adding environment variables or sidecar containers).
+- Specifies which services to deploy.
+- Points to environment-specific `values-*.yaml` files to configure each service's replica count, resources, etc.
+- Can apply strategic patches to the manifests (e.g., adding environment variables or sidecar containers).
 
 This approach provides maximum flexibility and avoids duplicating YAML configuration.
+
+#### Choosing Which Build Target to Use
+
+| Use Case | Recommended Target |
+|----------|--------------------|
+| Quick full environment manifest | `//k8s:dev` (or staging/prod) |
+| Inspect raw overlay output | `//k8s/overlays/dev:dev_manifests` |
+| Run policy/lint checks on manifests | Overlay targets (raw) |
+| Pre-deploy diff against cluster | Overlay targets + `kubectl diff` |
+| CI artifact for promotion | Environment macro target |
+
+#### Example: Policy Scan
+
+```sh
+bazel build //k8s/overlays/dev:dev_manifests
+conftest test bazel-bin/k8s/overlays/dev/dev_manifests.yaml
+```
 
 ### Secrets Management with External Secrets Operator (ESO)
 

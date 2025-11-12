@@ -5,6 +5,8 @@ load("//tools/bazel:proto.bzl", "go_api_library")
 go_api_library(
     name = "product_v1",
     srcs = ["product.proto"],
+    # Override importpath prefix to avoid duplicate 'proto' segment (see user_v1 example)
+    importpath_prefix = "go-monorepo-template/",
 )
 
 go_library(

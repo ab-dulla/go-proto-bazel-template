@@ -3,7 +3,7 @@
 load("@rules_go//proto:def.bzl", "go_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
-def go_api_library(name, srcs, deps = [], visibility = ["//visibility:public"], importpath_prefix = "go-monorepo-template/proto/"):
+def go_api_library(name, srcs, deps = [], visibility = ["//visibility:public"], importpath_prefix = "go-monorepo-template/"):
     """Create proto + Go gRPC code + placeholder OpenAPI spec (single target)."""
     proto_library(
         name = name + "_proto",

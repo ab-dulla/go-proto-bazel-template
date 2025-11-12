@@ -15,3 +15,10 @@ exports_files([
     "values-user-api.yaml",
     "values-product-api.yaml",
 ], visibility = ["//k8s:__pkg__"])  # only parent k8s package needs them
+
+# Build the fully rendered manifests for this overlay (includes Helm + Kustomize layering)
+alias(
+    name = "manifests",
+    actual = ":kustomization",
+    visibility = ["//visibility:public"],
+)

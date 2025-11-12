@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
+	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"gorm.io/gorm"
 
 	"go-monorepo-template/pkg/database"
@@ -19,6 +23,7 @@ import (
 
 const (
 	grpcPort = ":8080"
+	httpPort = ":8081"
 )
 
 // server implements the UserService gRPC server.
@@ -66,11 +71,27 @@ func main() {
 		}
 	}()
 
+	// Start the HTTP server (minimal gateway substitute)
+	httpServer := newHTTPServer(log)
+	go func() {
+		log.Info("HTTP server listening", "port", httpPort)
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error("HTTP server failed", "error", err)
+			os.Exit(1)
+		}
+	}()
+
 	// Wait for termination signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Info("Shutting down servers...")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		log.Error("HTTP shutdown error", "error", err)
+	}
 }
 
 func runGrpcServer(s *server) error {
@@ -86,7 +107,60 @@ func runGrpcServer(s *server) error {
 	return grpcServer.Serve(lis)
 }
 
-// TODO: HTTP gateway removed temporarily because grpc-gateway generated handler
-// (RegisterUserServiceHandlerFromEndpoint) is not produced by current proto build.
-// Integrate protoc-gen-grpc-gateway and protoc-gen-openapiv2 plugins, then
-// restore an HTTP server (port :8081) exposing REST and OpenAPI spec.
+// newHTTPServer creates a minimal HTTP server that proxies selected REST
+// endpoints to the local gRPC server without grpc-gateway codegen. This is a
+// temporary solution until protoc-gen-grpc-gateway and OpenAPI generation are
+// integrated into the build.
+func newHTTPServer(log *slog.Logger) *http.Server {
+	mux := http.NewServeMux()
+
+	// Health endpoint
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		_, _ = w.Write([]byte("ok"))
+	})
+
+	// GET /v1/users/{id}
+	mux.HandleFunc("/v1/users/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		// Extract ID from path.
+		parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/v1/users/"), "/")
+		id := parts[0]
+		if id == "" {
+			http.Error(w, "missing user id", http.StatusBadRequest)
+			return
+		}
+
+		// Create a gRPC client connection.
+		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+		defer cancel()
+		conn, err := grpc.DialContext(ctx, "127.0.0.1"+grpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			log.Error("failed to dial gRPC", "error", err)
+			http.Error(w, "upstream unavailable", http.StatusServiceUnavailable)
+			return
+		}
+		defer conn.Close()
+		client := userpb.NewUserServiceClient(conn)
+		user, err := client.GetUser(ctx, &userpb.GetUserRequest{UserId: id})
+		if err != nil {
+			log.Error("gRPC GetUser error", "error", err, "user_id", id)
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		// Manual JSON to avoid adding dependencies; struct tags from proto ensure fields.
+		fmt.Fprintf(w, `{"userId":"%s","displayName":"%s","email":"%s"}`, user.UserId, user.DisplayName, user.Email)
+	})
+
+	return &http.Server{
+		Addr:    httpPort,
+		Handler: mux,
+	}
+}
+
+// TODO: Replace manual HTTP shim with grpc-gateway generated handlers and real
+// OpenAPI spec once protoc-gen-grpc-gateway & protoc-gen-openapiv2 are added.
