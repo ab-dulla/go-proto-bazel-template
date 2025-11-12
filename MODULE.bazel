@@ -8,23 +8,21 @@ module(
     compatibility_level = 1,
 )
 
-bazel_dep(name = "rules_go", version = "0.59.0") # Go rules for building Go projects, e.g., compiling and testing Go code
-bazel_dep(name = "gazelle", version = "0.47.0") # Tool for generating Bazel build files for Go projects, e.g., creating BUILD.bazel files from go.mod
-bazel_dep(name = "rules_proto", version = "7.1.0") # Rules for working with Protocol Buffers, e.g., generating code from .proto files
-bazel_dep(name = "rules_pkg", version = "1.1.0") # Rules for packaging files into archives and installers, e.g., creating .tar or .deb files
-bazel_dep(name = "rules_oci", version = "2.2.6") # Rules for working with OCI-compliant container images, e.g., pulling and pushing images
-bazel_dep(name = "aspect_rules_lint", version = "1.10.2") # Rules for linting and static analysis, e.g., enforcing code style and detecting errors
-bazel_dep(name = "rules_kustomize", version = "0.5.2") # Rules for working with Kubernetes Kustomize, e.g., managing Kubernetes manifests
-bazel_dep(name = "rules_helm", version = "0.17.0") # Rules for working with Helm charts, e.g., templating and deploying charts
-
-## (Optional) Go SDK toolchain: removed pending correct repository name; rules_go default toolchain will be used.
+bazel_dep(name = "rules_go", version = "0.59.0") # Go rules for building Go projects, e.g., compiling and testing Go code. Example: `go_binary(name = "my_app", srcs = ["main.go"])`. CLI: `bazel build //:my_app`
+bazel_dep(name = "gazelle", version = "0.47.0") # Tool for generating Bazel build files for Go projects, e.g., creating BUILD.bazel files from go.mod. Example: `gazelle(name = "update_repos", args = ["update-repos", "--from_file=go.mod"])`. CLI: `bazel run //:update_repos`
+bazel_dep(name = "rules_proto", version = "7.1.0") # Rules for working with Protocol Buffers, e.g., generating code from .proto files. Example: `proto_library(name = "my_proto", srcs = ["my_proto.proto"])`. CLI: `bazel build //:my_proto`
+bazel_dep(name = "rules_pkg", version = "1.1.0") # Rules for packaging files into archives and installers, e.g., creating .tar or .deb files. Example: `pkg_tar(name = "my_tar", srcs = ["file.txt"], strip_prefix = "/")`. CLI: `bazel build //:my_tar`
+bazel_dep(name = "rules_oci", version = "2.2.6") # Rules for working with OCI-compliant container images, e.g., pulling and pushing images. Example: `oci_push(name = "push_image", image = "my_image", format = "Docker")`. CLI: `bazel run //:push_image`
+bazel_dep(name = "aspect_rules_lint", version = "1.10.2") # Rules for linting and static analysis, e.g., enforcing code style and detecting errors. Example: `lint(name = "lint_code", srcs = ["main.go"])`. CLI: `bazel run //:lint_code`
+bazel_dep(name = "rules_kustomize", version = "0.5.2") # Rules for working with Kubernetes Kustomize, e.g., managing Kubernetes manifests. Example: `kustomize_build(name = "build_k8s", src = "overlays/dev")`. CLI: `bazel build //:build_k8s`
+bazel_dep(name = "rules_helm", version = "0.17.0") # Rules for working with Helm charts, e.g., templating and deploying charts. Example: `helm_template(name = "template_chart", chart = "my_chart")`. CLI: `bazel build //:template_chart`
 
 # Go Dependencies
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
 use_repo(
     go_deps,
-    "com_github_envoyproxy_protoc_gen_validate",
+    # "com_github_envoyproxy_protoc_gen_validate",
     "com_github_grpc_ecosystem_grpc_gateway_v2",
     "com_github_stretchr_testify",
     "io_gorm_driver_postgres",
