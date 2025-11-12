@@ -8,56 +8,46 @@ module(
     compatibility_level = 1,
 )
 
-bazel_dep(name = "bazel_skylib", version = "1.5.0")
-bazel_dep(name = "rules_go", version = "0.45.1")
-bazel_dep(name = "rules_proto", version = "6.0.0-rc1")
-bazel_dep(name = "rules_pkg", version = "0.10.1")
-bazel_dep(name = "rules_docker", version = "0.26.0")
-bazel_dep(name = "gazelle", version = "0.35.0")
-bazel_dep(name = "rules_lint", version = "0.20.0")
-bazel_dep(name = "rules_kustomize", version = "0.8.1")
-bazel_dep(name = "rules_helm", version = "0.5.1")
+bazel_dep(name = "rules_go", version = "0.59.0")  # Go rules for building Go binaries and tests. Example: `go_binary(name = "server", srcs = ["cmd/server/main.go"])`
+bazel_dep(name = "gazelle", version = "0.47.0")  # Tool for generating Bazel build files for Go projects. Example: `gazelle(name = "update_repos", args = ["update-repos", "--from_file=go.mod"])`
+bazel_dep(name = "rules_proto", version = "7.1.0")  # Rules for working with Protocol Buffers. Example: `proto_library(name = "api_proto", srcs = ["api.proto"])`
+bazel_dep(name = "rules_pkg", version = "1.1.0")  # Rules for packaging files into archives. Example: `pkg_tar(name = "release_tar", srcs = ["bin/server"], strip_prefix = "/")`
+bazel_dep(name = "rules_oci", version = "2.2.6")  # Rules for working with OCI-compliant container images. Example: `oci_push(name = "push_image", image = "distroless_base", format = "Docker")`
+
+# bazel_dep(name = "aspect_rules_lint", version = "1.10.2") # Rules for linting and static analysis. Example: `lint(name = "lint_go_code", srcs = ["cmd/server/main.go"])`
+bazel_dep(name = "rules_kustomize", version = "0.5.2")  # Rules for working with Kubernetes Kustomize. Example: `kustomize_build(name = "build_manifests", src = "overlays/dev")`
+bazel_dep(name = "rules_helm", version = "0.17.0")  # Rules for working with Helm charts. Example: `helm_template(name = "template_chart", chart = "charts/my_app")`
 
 # Go Dependencies
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
-
 go_deps.from_file(go_mod = "//:go.mod")
-
 use_repo(
     go_deps,
-    "com_github_envoyproxy_protoc_gen_validate",
-    "com_github_grpc_ecosystem_grpc_gateway_v2",
+    "com_github_stretchr_testify",
+    "io_gorm_driver_postgres",
+    "io_gorm_gorm",
     "org_golang_google_grpc",
     "org_golang_google_protobuf",
-    "gorm_io_gorm",
-    "gorm_io_driver_postgres",
-    "com_github_stretchr_testify",
-)
-
-# rules_lint setup
-use_repo(go_deps, golangci_lint = "com_github_golangci_golangci_lint")
-
-lint = use_extension("@rules_lint//lint:extensions.bzl", "lint")
-
-lint.toolchain(
-    name = "golangci_lint_toolchain",
-    linter = "@golangci_lint//:binary",
 )
 
 # rules_kustomize setup
 kustomize = use_extension("@rules_kustomize//kustomize:extensions.bzl", "kustomize")
-kustomize.toolchain(version = "v5.3.0")
+
+# Configure kustomize tool download (rules_kustomize exposes only a 'download' tag class)
+kustomize.download(version = "v5.8.0")
 
 # rules_helm setup
 helm = use_extension("@rules_helm//helm:extensions.bzl", "helm")
-helm.toolchain(version = "v3.14.2")
+helm.toolchain(version = "3.19.0")
 
-# rules_docker setup for distroless base image
-oci = use_extension("@rules_pkg//pkg:oci.bzl", "oci")
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
 oci.pull(
     name = "distroless_base",
-    image = "gcr.io/distroless/base-debian12",
-    # The digest for the specific image version we want to use.
-    # This ensures hermetic builds.
-    digest = "sha256:e36c4b931a5905c13b659a8145e61a2931267425f1784d7b4274916a04a6256f",
+    digest = "sha256:ccaef5ee2f1850270d453fdf700a5392534f8d1a8ca2acda391fbb6a06b81c86",
+    image = "gcr.io/distroless/base",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64",
+    ],
 )
+use_repo(oci, "distroless_base", "distroless_base_linux_amd64", "distroless_base_linux_arm64")

@@ -1,10 +1,17 @@
-"""
-BUILD file for the Product API v1.
-"""
-
+"""BUILD file for the Product API v1."""
+load("@rules_go//go:def.bzl", "go_library")
 load("//tools/bazel:proto.bzl", "go_api_library")
 
 go_api_library(
     name = "product_v1",
     srcs = ["product.proto"],
+    # Override importpath prefix to avoid duplicate 'proto' segment (see user_v1 example)
+    importpath_prefix = "go-monorepo-template/",
+)
+
+go_library(
+    name = "product",
+    embed = [":product_v1_go_grpc"],
+    importpath = "go-monorepo-template/proto/acme/product/v1",
+    visibility = ["//visibility:public"],
 )

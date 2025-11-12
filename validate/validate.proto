@@ -1,0 +1,21 @@
+syntax = "proto3";
+package validate;
+
+import "google/protobuf/descriptor.proto";
+
+// Minimal placeholder for protoc-gen-validate rules used in examples.
+message StringRules {
+  uint64 min_len = 1;
+  uint64 max_len = 2;
+  string pattern = 3;
+}
+
+message FieldRules {
+  oneof type {
+    StringRules string = 1;
+  }
+}
+
+extend google.protobuf.FieldOptions {
+  FieldRules rules = 1071;
+}

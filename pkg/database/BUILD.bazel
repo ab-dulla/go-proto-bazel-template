@@ -10,7 +10,7 @@ go_library(
     importpath = "go-monorepo-template/pkg/database",
     visibility = ["//visibility:public"],
     deps = [
-        "@gorm_io_driver_postgres//:driver_postgres",
-        "@gorm_io_gorm//:gorm",
+        "@io_gorm_driver_postgres//:go_default_library",
+        "@io_gorm_gorm//:go_default_library",
     ],
 )

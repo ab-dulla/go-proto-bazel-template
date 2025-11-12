@@ -24,7 +24,7 @@ SERVICES = [
 k8s_environment(
     name = "dev",
     chart = "//charts/app:app_chart",
-    kustomize_overlay = "//k8s/overlays/dev:kustomization.yaml",
+    kustomize_overlay = "//k8s/overlays/dev:kustomization",
     services = [
         {
             "release_name": s["release_name"],
@@ -38,7 +38,7 @@ k8s_environment(
 k8s_environment(
     name = "staging",
     chart = "//charts/app:app_chart",
-    kustomize_overlay = "//k8s/overlays/staging:kustomization.yaml",
+    kustomize_overlay = "//k8s/overlays/staging:kustomization",
     services = [
         {
             "release_name": s["release_name"],
@@ -52,7 +52,7 @@ k8s_environment(
 k8s_environment(
     name = "prod",
     chart = "//charts/app:app_chart",
-    kustomize_overlay = "//k8s/overlays/prod:kustomization.yaml",
+    kustomize_overlay = "//k8s/overlays/prod:kustomization",
     services = [
         {
             "release_name": s["release_name"],

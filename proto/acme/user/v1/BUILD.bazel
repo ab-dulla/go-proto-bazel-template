@@ -1,10 +1,21 @@
+load("@rules_go//go:def.bzl", "go_library")
+load("//tools/bazel:proto.bzl", "go_api_library")
+
 """
 BUILD file for the User API v1.
 """
 
-load("//tools/bazel:proto.bzl", "go_api_library")
-
 go_api_library(
     name = "user_v1",
     srcs = ["user.proto"],
+    # Override importpath prefix so generated code import path is
+    # go-monorepo-template/proto/acme/user/v1 (avoid duplicate 'proto').
+    importpath_prefix = "go-monorepo-template/",
+)
+
+go_library(
+    name = "user",
+    embed = [":user_v1_go_grpc"],
+    importpath = "go-monorepo-template/proto/acme/user/v1",
+    visibility = ["//visibility:public"],
 )

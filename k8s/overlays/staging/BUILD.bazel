@@ -1,0 +1,23 @@
+load("@rules_kustomize//kustomize:kustomize.bzl", "kustomization")
+
+kustomization(
+    name = "kustomization",
+    srcs = [
+        "kustomization.yaml",
+        "values-product-api.yaml",
+        "values-user-api.yaml",
+    ],
+    file = "kustomization.yaml",
+    requires_helm = True,
+    visibility = ["//visibility:public"],
+)
+exports_files([
+    "values-user-api.yaml",
+    "values-product-api.yaml",
+], visibility = ["//k8s:__pkg__"])  # restrict to parent k8s package
+
+alias(
+    name = "manifests",
+    actual = ":kustomization",
+    visibility = ["//visibility:public"],
+)

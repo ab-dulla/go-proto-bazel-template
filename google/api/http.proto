@@ -1,0 +1,24 @@
+syntax = "proto3";
+package google.api;
+
+option go_package = "google.golang.org/genproto/googleapis/api/annotations";
+
+// Defines the HTTP configuration for an API service.
+message Http {
+  repeated HttpRule rules = 1;
+}
+
+// A single HTTP rule.
+message HttpRule {
+  string selector = 1;
+  oneof pattern {
+    string get = 2;
+    string put = 3;
+    string post = 4;
+    string delete = 5;
+    string patch = 6;
+    string custom = 8; // simplified: should be CustomHttpPattern
+  }
+  string body = 7;
+  string response_body = 12;
+}

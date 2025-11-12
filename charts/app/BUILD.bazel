@@ -2,20 +2,14 @@
 BUILD file for the base Helm chart.
 """
 
-load("@rules_helm//helm:helm.bzl", "helm_chart", "helm_push")
+# Load public Helm macros from defs.bzl (re-exports private/helm.bzl definitions).
+load("@rules_helm//helm:defs.bzl", "helm_chart")
 
 helm_chart(
     name = "app_chart",
     chart = "Chart.yaml",
-    srcs = glob(["templates/*.yaml"]),
+    # Include both YAML manifests and helper template definitions (*.tpl)
+    templates = glob(["templates/*.yaml", "templates/*.tpl"]),
     values = "values.yaml",
     visibility = ["//visibility:public"],
-)
-
-helm_push(
-    name = "push-oci",
-    chart = ":app_chart",
-    registry = "harbor.example.com",
-    repository = "my-project/charts/app",
-    tag = "latest",
 )
