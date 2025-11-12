@@ -1,11 +1,5 @@
+"""BUILD file for the Product API v1."""
 load("@rules_go//go:def.bzl", "go_library")
-load("@rules_go//proto:def.bzl", "go_proto_library")
-load("@rules_proto//proto:defs.bzl", "proto_library")
-
-"""
-BUILD file for the Product API v1.
-"""
-
 load("//tools/bazel:proto.bzl", "go_api_library")
 
 go_api_library(
@@ -13,31 +7,9 @@ go_api_library(
     srcs = ["product.proto"],
 )
 
-proto_library(
-    name = "v1_proto",
-    srcs = ["product.proto"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//google/api:api_proto",
-        "//validate:validate_proto",
-    ],
-)
-
-go_proto_library(
-    name = "v1_go_proto",
-    compilers = ["@io_bazel_rules_go//proto:go_grpc_v2"],
-    importpath = "go-monorepo-template/proto/acme/product/v1",
-    proto = ":v1_proto",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//google/api:annotations_proto",
-        "//validate:validate_proto",
-    ],
-)
-
 go_library(
     name = "product",
-    embed = [":v1_go_proto"],
+    embed = [":product_v1_go_grpc"],
     importpath = "go-monorepo-template/proto/acme/product/v1",
     visibility = ["//visibility:public"],
 )

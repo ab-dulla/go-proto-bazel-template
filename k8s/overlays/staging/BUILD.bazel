@@ -11,15 +11,7 @@ kustomization(
     requires_helm = True,
     visibility = ["//visibility:public"],
 )
-
-filegroup(
-    name = "values-user-api.yaml",
-    srcs = ["values-user-api.yaml"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "values-product-api.yaml",
-    srcs = ["values-product-api.yaml"],
-    visibility = ["//visibility:public"],
-)
+exports_files([
+    "values-user-api.yaml",
+    "values-product-api.yaml",
+], visibility = ["//k8s:__pkg__"])  # restrict to parent k8s package

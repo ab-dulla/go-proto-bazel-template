@@ -1,0 +1,13 @@
+syntax = "proto2";
+package google.protobuf;
+
+// Minimal stubs of descriptor types needed for extensions.
+message FieldOptions {
+  // Allow custom field option extensions used by validate.
+  extensions 1000 to max;
+}
+message MethodOptions {
+  // Allow large extension numbers used by google.api.http annotation.
+  extensions 72295728 to 72295728;
+  // Could broaden: extensions 1 to max; kept minimal for now.
+}

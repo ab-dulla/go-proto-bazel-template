@@ -65,16 +65,6 @@ oci_image(
 oci_push(
     name = "push",
     image = ":image",
-    repository = "harbor.example.com/my-project/user-api:latest",
-)
-
-go_test(
-    name = "user-api_test",
-    srcs = ["user_api_test.go"],
-    embed = [":user-api_lib"],
-    deps = [
-        "//proto/acme/user/v1:user",
-        "@com_github_stretchr_testify//assert",
-        "@org_golang_google_grpc//:grpc",
-    ],
+    # Tag is supplied externally (e.g., via --define oci_tag=...). Repository must not contain a tag.
+    repository = "harbor.example.com/my-project/user-api",
 )

@@ -11,3 +11,7 @@ kustomization(
     requires_helm = True,
     visibility = ["//visibility:public"],
 )
+exports_files([
+    "values-user-api.yaml",
+    "values-product-api.yaml",
+], visibility = ["//k8s:__pkg__"])  # only parent k8s package needs them

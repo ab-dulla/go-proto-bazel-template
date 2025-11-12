@@ -8,7 +8,8 @@ load("@rules_helm//helm:defs.bzl", "helm_chart")
 helm_chart(
     name = "app_chart",
     chart = "Chart.yaml",
-    templates = glob(["templates/*.yaml"]),
+    # Include both YAML manifests and helper template definitions (*.tpl)
+    templates = glob(["templates/*.yaml", "templates/*.tpl"]),
     values = "values.yaml",
     visibility = ["//visibility:public"],
 )

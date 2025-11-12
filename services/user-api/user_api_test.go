@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
 
 	userpb "go-monorepo-template/proto/acme/user/v1"
 )
@@ -19,8 +18,8 @@ func TestGetUser(t *testing.T) {
 		expectedErr bool
 	}{
 		{
-			name: "valid request",
-			req:  &userpb.GetUserRequest{UserId: "123"},
+			name:        "valid request",
+			req:         &userpb.GetUserRequest{UserId: "123"},
 			expectedErr: false,
 		},
 	}

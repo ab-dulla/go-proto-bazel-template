@@ -44,5 +44,6 @@ oci_image(
 oci_push(
     name = "push",
     image = ":image",
-    repository = "harbor.example.com/my-project/product-api:latest",
+    # Tag is supplied externally (e.g., via --define oci_tag=...). Repository must not contain a tag.
+    repository = "harbor.example.com/my-project/product-api",
 )

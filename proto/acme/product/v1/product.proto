@@ -2,19 +2,13 @@ syntax = "proto3";
 
 package acme.product.v1;
 
-import "google/api/annotations.proto";
-import "validate/validate.proto";
 
 option go_package = "go-monorepo-template/proto/acme/product/v1";
 
 // The product service definition.
 service ProductService {
   // Retrieves a product by its ID.
-  rpc GetProduct(GetProductRequest) returns (Product) {
-    option (google.api.http) = {
-      get: "/v1/products/{product_id}"
-    };
-  }
+  rpc GetProduct(GetProductRequest) returns (Product) {}
 }
 
 // A product resource.
@@ -28,10 +22,5 @@ message Product {
 // Request message for GetProduct RPC.
 message GetProductRequest {
   // The ID of the product to retrieve.
-  string product_id = 1 [
-    (validate.rules).string = {
-      min_len: 1,
-      max_len: 36
-    }
-  ];
+  string product_id = 1;
 }

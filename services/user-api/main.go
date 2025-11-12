@@ -5,14 +5,11 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"gorm.io/gorm"
 
 	"go-monorepo-template/pkg/database"
@@ -22,7 +19,6 @@ import (
 
 const (
 	grpcPort = ":8080"
-	httpPort = ":8081"
 )
 
 // server implements the UserService gRPC server.
@@ -33,7 +29,9 @@ type server struct {
 }
 
 func (s *server) GetUser(ctx context.Context, req *userpb.GetUserRequest) (*userpb.User, error) {
-	s.log.Info("GetUser called", "user_id", req.UserId)
+	if s.log != nil {
+		s.log.Info("GetUser called", "user_id", req.UserId)
+	}
 	// In a real application, you would fetch the user from the database.
 	// We'll return a mock user for this example.
 	return &userpb.User{
@@ -68,14 +66,6 @@ func main() {
 		}
 	}()
 
-	// Start the gRPC-Gateway HTTP server
-	go func() {
-		if err := runHttpServer(); err != nil {
-			log.Error("HTTP server failed", "error", err)
-			os.Exit(1)
-		}
-	}()
-
 	// Wait for termination signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -96,28 +86,7 @@ func runGrpcServer(s *server) error {
 	return grpcServer.Serve(lis)
 }
 
-func runHttpServer() error {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	err := userpb.RegisterUserServiceHandlerFromEndpoint(ctx, mux, "localhost"+grpcPort, opts)
-	if err != nil {
-		return fmt.Errorf("failed to register gRPC gateway: %w", err)
-	}
-
-	// Serve the OpenAPI spec
-	mux.HandlePath("GET", "/openapi.json", func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
-		http.ServeFile(w, r, "services/user-api/user_v1.swagger.json")
-	})
-
-	s := &http.Server{
-		Addr:    httpPort,
-		Handler: mux,
-	}
-
-	fmt.Println("HTTP server listening on port", httpPort)
-	return s.ListenAndServe()
-}
+// TODO: HTTP gateway removed temporarily because grpc-gateway generated handler
+// (RegisterUserServiceHandlerFromEndpoint) is not produced by current proto build.
+// Integrate protoc-gen-grpc-gateway and protoc-gen-openapiv2 plugins, then
+// restore an HTTP server (port :8081) exposing REST and OpenAPI spec.
